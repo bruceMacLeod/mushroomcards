@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const LargeImageModal = ({ isOpen, onClose, currentCard }) => {
+    // Handle Escape key press
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+
+    // Early return if modal is not open or no card is provided
     if (!isOpen || !currentCard || !currentCard.image_url) return null;
 
     // Create the full-size image URL by replacing 'medium.jpg' with 'large.jpg'
@@ -31,6 +49,7 @@ const LargeImageModal = ({ isOpen, onClose, currentCard }) => {
                 zIndex: 1000,
                 padding: '10px' // Reduced padding to maximize space
             }}
+            onClick={onClose} // Close modal when clicking outside the image
         >
             <div
                 style={{
@@ -45,6 +64,7 @@ const LargeImageModal = ({ isOpen, onClose, currentCard }) => {
                     flexDirection: 'column',
                     position: 'relative'
                 }}
+                onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
             >
                 {/* Image container */}
                 <div style={{
@@ -65,6 +85,7 @@ const LargeImageModal = ({ isOpen, onClose, currentCard }) => {
                             objectFit: 'contain',
                             borderRadius: '4px'
                         }}
+                        onClick={onClose} // Close modal when clicking on the image
                     />
                 </div>
 

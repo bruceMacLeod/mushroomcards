@@ -1,7 +1,7 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) => {
+const FileManagementModal = ({ isOpen, onClose, onFileSelect, onDirectImport }) => {
     const [serverFiles, setServerFiles] = useState([]);
     const [currentDirectory, setCurrentDirectory] = useState('mmaforays');
     const [isServerWakingUp, setIsServerWakingUp] = useState(false);
@@ -10,6 +10,23 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
     const [selectedFileName, setSelectedFileName] = useState('');
     const [uploadFileName, setUploadFileName] = useState('');
     const apiUrl = process.env.REACT_APP_API_URL;
+
+    // Handle Escape key press
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
 
     const fetchserverfiles = useCallback(async () => {
         setIsServerWakingUp(true);
@@ -59,7 +76,7 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
 
         try {
             const response = await axios.post(`${apiUrl}/upload_csv_json`, formData, {
-                headers: {'Content-Type': 'multipart/form-data'}
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
             if (response.data.records) {
@@ -79,7 +96,7 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
         }
     }, [apiUrl, onDirectImport, onClose]);
 
-   const handleFileUpload = useCallback(async (e) => {
+    const handleFileUpload = useCallback(async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         setUploadFileName(file.name);
@@ -93,7 +110,7 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
 
         try {
             await axios.post(`${apiUrl}/upload_csv`, formData, {
-                headers: {'Content-Type': 'multipart/form-data'}
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
             await fetchserverfiles();
             alert('File uploaded successfully');
@@ -120,7 +137,6 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
             }
         }
     }, [currentDirectory, onFileSelect, onClose]);
-
 
     if (!isOpen) return null;
 
@@ -169,13 +185,13 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
 
                 {!isServerWakingUp && !isProcessing && (
                     <>
-                        <div style={{marginBottom: '20px'}}>
+                        <div style={{ marginBottom: '20px' }}>
                             <h3>Select File</h3>
-                            <div style={{marginBottom: '15px'}}>
+                            <div style={{ marginBottom: '15px' }}>
                                 <button
                                     onClick={() => handleDirectoryChange('mmaforays')}
                                     aria-label="Switch to MMAforays directory"
-                                    style={{marginRight: '10px'}}
+                                    style={{ marginRight: '10px' }}
                                 >
                                     MMAforays
                                 </button>
@@ -230,7 +246,7 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
                             </div>
                         </div>
 
-                        <div style={{marginBottom: '20px'}}>
+                        <div style={{ marginBottom: '20px' }}>
                             <h3>Import iNaturalist CSV</h3>
                             <div style={{
                                 display: 'flex',
@@ -260,12 +276,12 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
                                     </span>
                                 )}
                             </div>
-                            <p style={{fontSize: '0.9em', color: '#666', marginTop: '5px'}}>
+                            <p style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
                                 Import directly without saving to server
                             </p>
                         </div>
 
-                        <div style={{marginBottom: '20px'}}>
+                        <div style={{ marginBottom: '20px' }}>
                             <h3>Upload and Save CSV</h3>
                             <div style={{
                                 display: 'flex',
@@ -299,7 +315,7 @@ const FileManagementModal = ({isOpen, onClose, onFileSelect, onDirectImport}) =>
                     </>
                 )}
 
-                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '20px'}}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                     <button
                         onClick={onClose}
                         aria-label="Close modal"

@@ -1,6 +1,24 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 
 const PronunciationModal = ({ pronunciationModalOpen, pronunciationText, setPronunciationModalOpen, isServerWakingUp }) => {
+
+    // Handle Escape key press
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setPronunciationModalOpen(false);
+            }
+        };
+
+        if (pronunciationModalOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [pronunciationModalOpen, setPronunciationModalOpen]);
+
     if (!pronunciationModalOpen) return null;
 
     return (

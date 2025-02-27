@@ -27,17 +27,21 @@ const HelpModal = ({ isOpen, onClose }) => {
               Click on the Check Answer three times
             </li>
             <li>
+              <strong>Make the image larger: </strong>
+              Click on the image and it will open a larger one
+            </li>
+            <li>
               <strong>Load another Flashcard deck: </strong>
               Click Manage button in Upper right hand corner, then you can
               choose a deck from MMA forays or a User submitted deck
             </li>
             <li>
               <strong>Pronunciation: </strong>
-              English Scientific Latin was chosen for pronunciation. No audio (at least for now)
+              English Scientific Latin was chosen for pronunciation. Sometimes, it can take a while as it is going out to the Google Gemini LLM.
             </li>
             <li>
               <strong>Hints: </strong>
-              Show all the scientific names in the flashcard deck. Selecting hint will submit name for
+              Shows all the scientific names in the flashcard deck. Selecting hint will submit name for
               identification check.
             </li>
             <li>
@@ -84,16 +88,26 @@ const HelpModal = ({ isOpen, onClose }) => {
           <p>
             <strong>An example of a CSV file: </strong>
             <a
-              href="https://github.com/bruceMacLeod/inat-flashcards/blob/master/backend/data/uploads/intro-obs-myco.csv"
+              href="https://github.com/bruceMacLeod/mushroomcards/blob/master/backend/data/uploads/intro-obs-myco.csv"
               target="_blank"
               rel="noopener noreferrer"
             >
-              https://github.com/bruceMacLeod/inat-flashcards/blob/master/backend/data/uploads/intro-obs-myco.csv
+              https://github.com/bruceMacLeod/mushroomcards/blob/master/backend/data/uploads/intro-obs-myco.csv
             </a>
           </p>
 
           <p>
             <strong>Could you make a deck of something other than mushrooms? </strong> Sure!
+          </p>
+
+          <p>
+            <strong>Source code </strong> <a
+              href="https://github.com/bruceMacLeod/mushroomcards"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://github.com/bruceMacLeod/mushroomcards
+            </a>
           </p>
         </div>
       </div>
