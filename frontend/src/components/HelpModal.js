@@ -1,7 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './HelpModal.css';
 
 const HelpModal = ({ isOpen, onClose }) => {
+  // Handle Escape key press to close the modal
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose(); // Close the modal when Escape is pressed
+      }
+    };
+
+    // Add event listener when the modal is open
+    if (isOpen) {
+      window.addEventListener('keydown', handleEscapeKey);
+    }
+
+    // Cleanup event listener when the modal is closed or component unmounts
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, onClose]); // Depend on isOpen and onClose
+
+  // Early return if modal is not open
   if (!isOpen) return null;
 
   return (
