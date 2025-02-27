@@ -1,0 +1,105 @@
+.help-dialog-container {
+  position: fixed;
+  z-index: 1200;
+  right: 80px;
+  bottom: 80px;
+  pointer-events: none;
+}
+
+.help-dialog {
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.help-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.help-dialog-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.close-dialog-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+.close-dialog-button:hover {
+  color: #000;
+}
+
+.help-dialog-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.help-dialog-content h3 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.help-dialog-content h3:first-child {
+  margin-top: 0;
+}
+
+.help-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-bottom: 16px;
+}
+
+.help-list li {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.csv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 0.8rem;
+}
+
+.csv-table th, .csv-table td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: left;
+}
+
+.csv-table th {
+  background-color: #f0f0f0;
+}
+
+.break-word {
+  word-break: break-all;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
