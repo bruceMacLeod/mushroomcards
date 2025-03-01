@@ -276,9 +276,10 @@ def get_taxon_id(scientific_name):
     print(f"No taxon_id found for {scientific_name}.")
     return None
 
+
 @app.route("/upload_csv", methods=["POST"])
 def upload_csv():
-    """Upload a CSV file, add a taxa_url column, and save only specific columns."""
+    """Upload a CSV file, add a taxa_url column if not present, and save only specific columns."""
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -297,31 +298,39 @@ def upload_csv():
         file_stream = file.stream.read().decode("utf-8").splitlines()
         reader = csv.DictReader(file_stream)
         for row in reader:
-            # Fetch the taxon_id and construct the taxa_url
             scientific_name = row.get("scientific_name", "")
-            taxon_id = get_taxon_id(scientific_name)
-            taxa_url = f"https://www.inaturalist.org/taxa/{taxon_id}" if taxon_id else "N/A"
 
-            # Fetch observation details from iNaturalist API
-            observation_url = row.get("url", "")
-            if observation_url:
-                try:
-                    observation_id = observation_url.split("/")[-1]
-                    observation_response = requests.get(f"https://api.inaturalist.org/v1/observations/{observation_id}")
-                    if observation_response.status_code == 200:
-                        observation_data = observation_response.json().get("results", [{}])[0]
-                        if observation_data.get("photos"):
-                            photo = observation_data["photos"][0]
-                            attribution = photo.get('attribution', "N/A")
+            # Check if taxa_url already exists in the CSV
+            taxa_url = row.get("taxa_url")
+            if not taxa_url or taxa_url == "N/A":
+                # Fetch the taxon_id and construct the taxa_url if not present
+                taxon_id = get_taxon_id(scientific_name)
+                taxa_url = f"https://www.inaturalist.org/taxa/{taxon_id}" if taxon_id else "N/A"
+
+            # Check if attribution already exists
+            attribution = row.get("attribution")
+            if not attribution or attribution == "N/A":
+                # Fetch observation details from iNaturalist API
+                observation_url = row.get("url", "")
+                if observation_url:
+                    try:
+                        observation_id = observation_url.split("/")[-1]
+                        observation_response = requests.get(
+                            f"https://api.inaturalist.org/v1/observations/{observation_id}")
+                        if observation_response.status_code == 200:
+                            observation_data = observation_response.json().get("results", [{}])[0]
+                            if observation_data.get("photos"):
+                                photo = observation_data["photos"][0]
+                                attribution = photo.get('attribution', "N/A")
+                            else:
+                                attribution = "N/A"
                         else:
                             attribution = "N/A"
-                    else:
+                    except Exception as e:
+                        logger.error(f"Error fetching observation details: {str(e)}")
                         attribution = "N/A"
-                except Exception as e:
-                    logger.error(f"Error fetching observation details: {str(e)}")
+                else:
                     attribution = "N/A"
-            else:
-                attribution = "N/A"
 
             # Create a new row with only the required columns
             new_row = {
@@ -348,10 +357,11 @@ def upload_csv():
 
     return jsonify({"error": "Invalid file type"}), 400
 
-@app.route("/upload_csv_json", methods=["POST"])  # Explicitly allow POST method
+
+@app.route("/upload_csv_json", methods=["POST"])
 def upload_csv_json():
     """
-    Upload a CSV file, process it to add taxa_url, observer_name, observation_year, and observation_url fields,
+    Upload a CSV file, process it to add taxa_url and attribution fields if not present,
     and return the processed records as JSON without saving the file.
     """
     if "file" not in request.files:
@@ -369,16 +379,19 @@ def upload_csv_json():
             file_stream = file.stream.read().decode("utf-8").splitlines()
             reader = csv.DictReader(file_stream)
             for row in reader:
-                # Fetch the taxon_id and construct the taxa_url
                 scientific_name = row.get("scientific_name", "")
-                taxon_id = get_taxon_id(scientific_name)
-                taxa_url = f"https://www.inaturalist.org/taxa/{taxon_id}" if taxon_id else "N/A"
 
-                # Extract observer_name, observation_year, and observation_url
-                observer_name = row.get("user_login", "N/A")
-                created_at = row.get("created_at", "N/A")
-                observation_year = created_at.split("-")[0] if created_at != "N/A" else "N/A"
-                observation_url = row.get("url", "N/A")
+                # Check if taxa_url already exists in the CSV
+                taxa_url = row.get("taxa_url")
+                if not taxa_url or taxa_url == "N/A":
+                    # Fetch the taxon_id and construct the taxa_url if not present
+                    taxon_id = get_taxon_id(scientific_name)
+                    taxa_url = f"https://www.inaturalist.org/taxa/{taxon_id}" if taxon_id else "N/A"
+
+                # Handle attribution - use existing attribution or fall back to observation_url
+                attribution = row.get("attribution")
+                if not attribution or attribution == "N/A":
+                    attribution = row.get("observation_url", row.get("url", "N/A"))
 
                 # Create a new row with only the required columns
                 new_row = {
@@ -386,9 +399,8 @@ def upload_csv_json():
                     "common_name": row.get("common_name", "N/A"),
                     "image_url": row.get("image_url", "N/A"),
                     "taxa_url": taxa_url,
-                    "observer_name": observer_name,
-                    "observation_year": observation_year,
-                    "observation_url": observation_url
+                    "attribution": attribution,
+                    "observation_url": row.get("observation_url", row.get("url", "N/A"))
                 }
                 rows.append(new_row)
 

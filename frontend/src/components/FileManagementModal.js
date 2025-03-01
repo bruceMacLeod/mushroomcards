@@ -247,7 +247,7 @@ const FileManagementModal = ({ isOpen, onClose, onFileSelect, onDirectImport }) 
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
-                            <h3>Import iNaturalist CSV</h3>
+                            <h3>Import CSV file</h3>
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',

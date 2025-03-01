@@ -8,7 +8,7 @@ import FileManagementModal from './components/FileManagementModal';
 import PronunciationModal from './components/PronunciationModal';
 import LargeImageModal from './components/LargeImageModal';
 import HelpModal from './components/HelpModal'; // Import the new HelpModal component
-import static_cards from './data/uploads/intro-obs-myco';
+import static_cards from './data/uploads/Spring2024Maine';
 
 const App = () => {
     const apiUrl = process.env.REACT_APP_API_URL;

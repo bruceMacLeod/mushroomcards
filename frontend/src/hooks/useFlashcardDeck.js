@@ -6,7 +6,7 @@ import useFlashcardGame  from './useFlashcardGame';
 export const useFlashcardDeck = (apiUrl) => {
     const [cards, setCards] = useState([]);
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
-    const [currentFileName, setCurrentFileName] = useState('intro-obs-myco');
+    const [currentFileName, setCurrentFileName] = useState('Spring2024Maine');
     const {resetGameState} = useFlashcardGame();
 
     const shuffleCards = useCallback((array) => {
