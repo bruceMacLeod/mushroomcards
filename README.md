@@ -1,6 +1,6 @@
 # Mushroom Flashcard Project
 
-[![Mushroom Flashcard Screenshot](Screenshot)
+[![Mushroom Flashcard Screenshot (./Screenshot.png)](./Screenshot.png)
 
 ## Project Description
 
