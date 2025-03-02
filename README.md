@@ -4,7 +4,7 @@
 
 ## Project Description
 
-The Mushroom Flashcard program (https://mushroomcards.pythonanywhere.com/) is designed to help newcomers identify mushrooms and learn the pronunciation of their scientific names.
+The Mushroom Flashcard program <a href="https://mushroomcards.pythonanywhere.com/)" target="_blank" rel="noopener noreferrer">Mushroom cards app</a> is designed to help newcomers identify mushrooms and learn the pronunciation of their scientific names.
 
 This flashcard program helps you build a visual and auditory vocabulary for mushrooms by practicing identification and pronunciation within a dedicated deck. The central part of the user interface is shown above.
 
@@ -12,7 +12,7 @@ The goal is to type in the correct scientific name (as already done in the scree
 
 The initial deck, "Spring2024Maine," was created by identifying the top 30 or so mushrooms with the highest number of iNaturalist research-grade observations in Maine from April to June 2024 (with a few morels added for fun). Other decks, including some from MMA foray lists, can be found by clicking the "Manage Flashcard Decks" button in the upper right corner. You can also load your own deck by providing a spreadsheet-like file with five columns (click the help icon in the bottom right corner for more information). The program runs best on a laptop or desktop computer.
 
-The Mushroom Flashcard application is an early-stage, open-source project. We welcome ideas and suggestions from anyone. If you're interested in other mushroom quizzes, you might also want to check out the quiz program at https://www.mycoquebec.org/. They offer a different question presentation style and have some interesting options, such as selecting a single taxonomic group.
+The Mushroom Flashcard application is an early-stage, open-source project. We welcome ideas and suggestions from anyone. If you're interested in other mushroom quizzes, you might also want to check out the quiz program at <a href="https://www.mycoquebec.org/" target="_blank" rel="noopener noreferrer">MycoQuebec</a>. They offer a different question presentation style and have some interesting options, such as selecting a single taxonomic group.
 
 ## Installation Instructions for PythonAnywhere.com
 
