@@ -4,7 +4,7 @@
 
 ## Project Description
 
-The Mushroom Flashcard program <a href="https://mushroomcards.pythonanywhere.com/)" target="_blank" rel="noopener noreferrer">Mushroom cards app</a> is designed to help newcomers identify mushrooms and learn the pronunciation of their scientific names.
+The Mushroom Flashcard program <a href="https://mushroomcards.pythonanywhere.com/" target="_blank" rel="noopener noreferrer">Mushroom cards app</a> is designed to help newcomers identify mushrooms and learn the pronunciation of their scientific names.
 
 This flashcard program helps you build a visual and auditory vocabulary for mushrooms by practicing identification and pronunciation within a dedicated deck. The central part of the user interface is shown above.
 
