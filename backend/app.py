@@ -121,10 +121,6 @@ def index():
 def wakeup():
     return "Server is awake!", 200
 
-# Add this endpoint to your Flask app
-@app.route("/ping", methods=["GET"])
-def ping():
-    return "pong", 200
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -135,30 +131,8 @@ def serve(path: str):
     return send_from_directory(app.static_folder, "index.html")
 
 
-@app.route("/api/data")
-@cross_origin()
-def get_data():
-    """Example API endpoint."""
-    return {"message": "Hello from Flask!"}
 
 
-@app.route("/get_hints", methods=["GET"])
-def get_hints():
-    """Get hints for the current flashcard."""
-    try:
-        if current_file["data"] is None:
-            default_file = os.path.join(Config.UPLOADS_DIR, "myspecies.csv")
-            current_file["data"] = load_csv_data(default_file)
-            current_file["path"] = default_file
-            current_file["directory"] = "uploads"
-
-        if current_file["data"] is not None:
-            hints = current_file["data"]["scientific_name"].unique().tolist()
-            return jsonify(hints), 200
-        return jsonify({"error": "No data available"}), 404
-    except Exception as e:
-        logger.error(f"Error in get_hints: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/check_answer", methods=["POST"])
@@ -219,32 +193,8 @@ def load_csv_data(file_path: str) -> Optional[pd.DataFrame]:
         return None
 
 
-@app.route("/current_file_info", methods=["GET"])
-def get_current_file_info():
-    """Get information about the current file."""
-    if current_file["path"]:
-        return jsonify(
-            {
-                "filename": os.path.basename(current_file["path"]),
-                "directory": current_file["directory"],
-            }
-        ), 200
-    return jsonify({"error": "No file currently selected"}), 404
 
 
-@app.route("/get_image", methods=["GET"])
-def get_image():
-    """Fetch an image from a URL."""
-    url = request.args.get("url")
-    logger.info(f"Attempting to fetch image from URL: {url}")
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        logger.info(f"Image fetch successful. Content-Type: {response.headers.get('Content-Type')}")
-        return send_file(BytesIO(response.content), mimetype=response.headers.get("Content-Type", "image/jpeg"))
-    except Exception as e:
-        logger.error(f"Error fetching image: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/list_csv_files", methods=["GET"])
@@ -547,16 +497,6 @@ def initialize_pronunciation_cache_file():
             logger.error(f"Error initializing pronunciation cache file: {str(e)}")
 
 
-@app.route("/exit_application", methods=["POST"])
-def exit_application():
-    """Exit the application."""
-    try:
-        if pronunciation_cache:
-            save_pronunciation_cache(pronunciation_cache)
-        os._exit(0)
-    except Exception as e:
-        logger.error(f"Exit application error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
