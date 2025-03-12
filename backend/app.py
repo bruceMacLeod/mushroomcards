@@ -1,43 +1,41 @@
-import os
+import csv
+import fcntl
 import logging
+import os
+import traceback
+from io import BytesIO
+from typing import Any, Dict, List, Optional
+
+import google.generativeai as genai
 import pandas as pd
 import requests
-import traceback
-import csv
-from flask import Flask, request, jsonify, send_file, send_from_directory, render_template
-from io import BytesIO
-import google.generativeai as genai
-from werkzeug.utils import secure_filename
-from flask_cors import CORS, cross_origin
-from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
+from flask import (Flask, jsonify, render_template, request, send_file,
+                  send_from_directory)
+from flask_cors import CORS, cross_origin
+from werkzeug.utils import secure_filename
+
 from config import Config
-import fcntl
-import csv
-from typing import Dict
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+# Load environment variables
+load_dotenv()
+
 # Initialize Flask app
 app = Flask(__name__)
 
-# "origins": ",os.getenv("CORS_ALLOWED_ORIGINS "").split(",") if os.getenv("CORS_ALLOWED_ORIGINS") else [],
-#            "origins": os.getenv("CORS_ALLOWED_ORIGINS").split(","),
-
-load_dotenv()
 # Initialize directories
 Config.init_directories()
+
 # Configure CORS
 CORS(
     app,
     resources={
         r"/*": {
             "origins": os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-            #            "methods": os.getenv("CORS_ALLOWED_METHODS", "GET,POST,OPTIONS,PUT,DELETE").split(","),
-            #            "allow_headers": os.getenv("CORS_ALLOWED_HEADERS", "Content-Type,Authorization").split(","),
-            #            "supports_credentials": os.getenv("CORS_SUPPORTS_CREDENTIALS", "true").lower() == "true",
         }
     }
 )
@@ -52,10 +50,11 @@ current_file: Dict[str, Any] = {
 
 # Helper Functions
 def load_csv_data(file_path: str) -> Optional[pd.DataFrame]:
-    """Load CSV data and return a shuffled DataFrame."""
+    """Load CSV data and return DataFrame."""
     try:
-        data = pd.read_csv(file_path)[["image_url", "scientific_name", "common_name"]].dropna()
-        return data.sample(frac=1).reset_index(drop=True)
+        required_columns = ["image_url", "scientific_name", "common_name", "taxa_url", "attribution"]
+        data = pd.read_csv(file_path)[required_columns].dropna()
+        return data
     except Exception as e:
         logger.error(f"Error loading CSV: {str(e)}")
         return None
@@ -91,10 +90,8 @@ def load_pronunciation_cache() -> Dict[str, str]:
 pronunciation_cache = load_pronunciation_cache()
 
 # Configure Gemini
-api_key=os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key= os.environ.get("GEMINI_API_KEY"))
-#  logging.info(f"Gemini key = {api_key}")
-
+api_key = os.environ.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
 
@@ -117,10 +114,10 @@ def save_pronunciation_cache(cache: Dict[str, str]) -> None:
 def index():
     return render_template("index.html")
 
-@app.route('/wakeup', methods=['GET'])
+
+@app.route("/wakeup", methods=["GET"])
 def wakeup():
     return "Server is awake!", 200
-
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -129,10 +126,6 @@ def serve(path: str):
     if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, "index.html")
-
-
-
-
 
 
 @app.route("/check_answer", methods=["POST"])
@@ -179,24 +172,6 @@ def load_cards():
         return jsonify({"error": str(e)}), 500
 
 
-# Modify the load_csv_data function to return all data without shuffling
-def load_csv_data(file_path: str) -> Optional[pd.DataFrame]:
-    """Load CSV data and return DataFrame."""
-    try:
-        # ,"observer_name",
-        #                                        "observation_year","observation_url"
-        data = pd.read_csv(file_path)[
-            ["image_url", "scientific_name", "common_name", "taxa_url", "attribution"]].dropna()
-        return data
-    except Exception as e:
-        logger.error(f"Error loading CSV: {str(e)}")
-        return None
-
-
-
-
-
-
 @app.route("/list_csv_files", methods=["GET"])
 def list_csv_files():
     """List CSV files in a directory in alphabetical order."""
@@ -208,11 +183,10 @@ def list_csv_files():
 
     # Get CSV files and sort them alphabetically
     csv_files = sorted([f for f in os.listdir(directory_path) if f.endswith(".csv")], key=str.lower)
- #   csv_files = sorted([f for f in os.listdir(directory_path) if f.endswith(".csv")])
     return jsonify({"files": csv_files}), 200
 
 
-def get_taxon_id(scientific_name):
+def get_taxon_id(scientific_name: str) -> Optional[int]:
     """Fetch the taxon_id for a given scientific name from iNaturalist."""
     url = "https://api.inaturalist.org/v1/taxa"
     params = {"q": scientific_name, "rank": "species"}
@@ -223,7 +197,7 @@ def get_taxon_id(scientific_name):
         if results:
             return results[0].get("id")
 
-    print(f"No taxon_id found for {scientific_name}.")
+    logger.info(f"No taxon_id found for {scientific_name}.")
     return None
 
 
@@ -413,11 +387,6 @@ def delete_csv(filename: str):
         return jsonify({"error": str(e)}), 500
 
 
-import fcntl
-import csv
-import os
-from typing import Dict
-
 
 def save_single_pronunciation(scientific_name: str, pronunciation: str) -> bool:
     """
@@ -426,7 +395,7 @@ def save_single_pronunciation(scientific_name: str, pronunciation: str) -> bool:
     """
     try:
         # Open file in append mode with file locking
-        with open(Config.PRONUNCIATION_CACHE_FILE, 'a', newline='') as f:
+        with open(Config.PRONUNCIATION_CACHE_FILE, "a", newline="") as f:
             # Acquire an exclusive lock
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:
@@ -486,7 +455,7 @@ def initialize_pronunciation_cache_file():
     """Create the pronunciation cache file with headers if it doesn't exist."""
     if not os.path.exists(Config.PRONUNCIATION_CACHE_FILE):
         try:
-            with open(Config.PRONUNCIATION_CACHE_FILE, 'w', newline='') as f:
+            with open(Config.PRONUNCIATION_CACHE_FILE, "w", newline="") as f:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 try:
                     writer = csv.writer(f)
@@ -495,8 +464,6 @@ def initialize_pronunciation_cache_file():
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         except Exception as e:
             logger.error(f"Error initializing pronunciation cache file: {str(e)}")
-
-
 
 
 if __name__ == "__main__":
