@@ -119,13 +119,6 @@ const static_cards = [
     "attribution": "https://www.flickr.com/photos/23151213@N03/"
   },
   {
-    "scientific_name": "Pleurotus levis",
-    "common_name": "Lynx Paw Oyster",
-    "image_url": "https://live.staticflickr.com/65535/30537483318_42b1fa497c_b.jpg",
-    "taxa_url": "https://www.mycoquebec.org/bas.php?tag=Pleurotus+levis&iumq=1395",
-    "attribution": "https://www.flickr.com/photos/19369983@N06/"
-  },
-  {
     "scientific_name": "Bondarzewia berkeleyi",
     "common_name": "Berkeley's Polypore",
     "image_url": "https://live.staticflickr.com/2422/3930591479_c6b1a6ee00_c.jpg",
@@ -149,16 +142,16 @@ const static_cards = [
   {
     "scientific_name": "Phyllotopsis nidulans",
     "common_name": "Stinking Orange Oyster",
-    "image_url": "https://live.staticflickr.com/65535/2120455477_0d14a7c235_b.jpg",
+    "image_url": "https://live.staticflickr.com/65535/51042228418_04fc4580b5_b.jpg",
     "taxa_url": "https://www.mycoquebec.org/bas.php?tag=Phyllotopsis+nidulans&iumq=1895",
     "attribution": "https://www.flickr.com/photos/19369983@N06/"
   },
   {
     "scientific_name": "Schizophyllum commune",
     "common_name": "splitgill mushroom",
-    "image_url": "https://live.staticflickr.com/5332/6947056592_f1ec1d5e10_b.jpg",
+    "image_url": "https://live.staticflickr.com/65535/52385832901_ca272e339a_b.jpg",
     "taxa_url": "https://www.mycoquebec.org/bas.php?tag=Schizophyllum+commune&iumq=2343",
-    "attribution": "https://www.flickr.com/photos/27657075@N07/"
+    "attribution": "https://www.flickr.com/photos/27441280@N06/"
   },
   {
     "scientific_name": "Mitrula elegans",
@@ -177,16 +170,9 @@ const static_cards = [
   {
     "scientific_name": "Plicatura crispa",
     "common_name": "crimped gill",
-    "image_url": "https://live.staticflickr.com/65535/52400021880_bc4e12e1e1_b.jpg",
+    "image_url": "https://live.staticflickr.com/65535/3991898462_49942908b1_b.jpg",
     "taxa_url": "https://www.mycoquebec.org/bas.php?tag=Plicaturopsis+crispa&iumq=1916",
-    "attribution": "https://www.flickr.com/photos/27441280@N06/"
-  },
-  {
-    "scientific_name": "Taphrina robinsoniana",
-    "common_name": "Eastern American alder tongue gall fungus",
-    "image_url": "https://live.staticflickr.com/7180/7125047103_a50227c897_b.jpg",
-    "taxa_url": "https://www.mycoquebec.org/bas.php?tag=Taphrina+robinsoniana&iumq=2452",
-    "attribution": "https://www.flickr.com/photos/7404539@N08/"
+    "attribution": "https://www.flickr.com/photos/19369983@N06/"
   },
   {
     "scientific_name": "Dacrymyces chrysospermus",
