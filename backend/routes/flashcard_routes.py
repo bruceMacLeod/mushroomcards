@@ -3,9 +3,9 @@ import csv
 import logging
 import os
 import traceback
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple, Optional
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response
 from werkzeug.utils import secure_filename
 
 from config import Config
@@ -13,20 +13,51 @@ from models.flashcard import flashcard_state
 from services.flashcard_service import check_answer, load_cards, select_csv_file, process_csv_data
 from utils.csv_utils import list_csv_files, save_csv_data
 
+# Configure module logger
 logger = logging.getLogger(__name__)
 
+# Create blueprint for flashcard routes
 flashcard_bp = Blueprint('flashcard', __name__)
 
 
 @flashcard_bp.route("/check_answer", methods=["POST"])
-def check_answer_route():
-    """Check if the user's answer is correct."""
-    payload = request.json
-    user_answer = payload.get("answer", "")
-    card = payload.get("card", {})
+def check_answer_route() -> Tuple[Response, int]:
+    """Check if the user's answer is correct.
     
-    result, status_code = check_answer(user_answer, card)
-    return jsonify(result), status_code
+    Expects JSON with:
+    - "answer": the user's provided answer
+    - "card": dictionary containing "scientific_name" and optionally "common_name"
+    
+    Returns:
+        JSON response with correct/incorrect status and HTTP status code
+    """
+    try:
+        # Validate request has JSON data
+        if not request.is_json:
+            logger.warning("Request to check_answer missing JSON")
+            return jsonify({"error": "Missing JSON in request"}), 400
+            
+        payload = request.json
+        user_answer = payload.get("answer", "")
+        card = payload.get("card", {})
+        
+        if not user_answer:
+            logger.warning("Empty answer provided to check_answer")
+            return jsonify({"error": "Answer is required"}), 400
+            
+        if not card:
+            logger.warning("Empty card provided to check_answer")
+            return jsonify({"error": "Card data is required"}), 400
+        
+        # Process the answer check
+        logger.debug(f"Checking answer: '{user_answer}' against card")
+        result, status_code = check_answer(user_answer, card)
+        return jsonify(result), status_code
+        
+    except Exception as e:
+        logger.error(f"Error in check_answer route: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
 @flashcard_bp.route("/load_cards", methods=["POST"])
@@ -139,19 +170,48 @@ def select_csv():
 
 
 @flashcard_bp.route("/delete_csv/<filename>", methods=["DELETE"])
-def delete_csv(filename: str):
-    """Delete a CSV file."""
-    if not filename.endswith(".csv"):
-        return jsonify({"error": "Invalid file type"}), 400
+def delete_csv(filename: str) -> Tuple[Response, int]:
+    """Delete a CSV file.
     
+    Args:
+        filename: The name of the file to delete
+
+    Query Parameters:
+        directory: The directory containing the file (default: "uploads")
+        
+    Returns:
+        JSON response with success/error message and HTTP status code
+    """
+    # Validate file extension
+    if not filename.endswith(".csv"):
+        logger.warning(f"Attempt to delete non-CSV file: {filename}")
+        return jsonify({"error": "Invalid file type - only CSV files can be deleted"}), 400
+    
+    # Get directory from query parameters
     directory = request.args.get("directory", "uploads")
+    
+    # Security check - verify filename doesn't contain path traversal
+    if ".." in filename or "/" in filename:
+        logger.warning(f"Potential path traversal attempt in filename: {filename}")
+        return jsonify({"error": "Invalid filename"}), 400
+    
+    # Construct full file path
     file_path = os.path.join(Config.BASE_DATA_DIR, directory, filename)
     
+    # Check if file exists
     if not os.path.exists(file_path):
+        logger.warning(f"File not found for deletion: {file_path}")
         return jsonify({"error": "File not found"}), 404
     
     try:
+        # Delete the file
         os.remove(file_path)
+        logger.info(f"Successfully deleted file: {file_path}")
         return jsonify({"message": "File deleted successfully"}), 200
+    except PermissionError:
+        logger.error(f"Permission denied deleting file: {file_path}")
+        return jsonify({"error": "Permission denied - cannot delete file"}), 403
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error deleting file {file_path}: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": f"Failed to delete file: {str(e)}"}), 500
