@@ -1,8 +1,13 @@
 # config.py
 import os
-from dotenv import load_dotenv
+import logging
 
-load_dotenv()
+# Try to import dotenv, but continue if it fails
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    logging.warning("python-dotenv not installed, skipping environment variable loading in config")
 
 
 class Config:

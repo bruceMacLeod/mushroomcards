@@ -1,0 +1,157 @@
+"""Routes for flashcard operations."""
+import csv
+import logging
+import os
+import traceback
+from typing import Dict, List, Any
+
+from flask import Blueprint, jsonify, request
+from werkzeug.utils import secure_filename
+
+from config import Config
+from models.flashcard import flashcard_state
+from services.flashcard_service import check_answer, load_cards, select_csv_file, process_csv_data
+from utils.csv_utils import list_csv_files, save_csv_data
+
+logger = logging.getLogger(__name__)
+
+flashcard_bp = Blueprint('flashcard', __name__)
+
+
+@flashcard_bp.route("/check_answer", methods=["POST"])
+def check_answer_route():
+    """Check if the user's answer is correct."""
+    payload = request.json
+    user_answer = payload.get("answer", "")
+    card = payload.get("card", {})
+    
+    result, status_code = check_answer(user_answer, card)
+    return jsonify(result), status_code
+
+
+@flashcard_bp.route("/load_cards", methods=["POST"])
+def load_cards_route():
+    """Load all cards from a CSV file."""
+    payload = request.json
+    filename = payload.get("filename")
+    directory = payload.get("directory", "mmaforays")
+    
+    result, status_code = load_cards(filename, directory)
+    return jsonify(result), status_code
+
+
+@flashcard_bp.route("/list_csv_files", methods=["GET"])
+def list_csv_files_route():
+    """List CSV files in a directory in alphabetical order."""
+    directory = request.args.get("directory", "mmaforays")
+    csv_files = list_csv_files(directory)
+    return jsonify({"files": csv_files}), 200
+
+
+@flashcard_bp.route("/upload_csv", methods=["POST"])
+def upload_csv():
+    """Upload a CSV file, add a taxa_url column if not present, and save specific columns."""
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    file = request.files["file"]
+    directory = request.form.get("directory", "uploads")
+    
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and file.filename.endswith(".csv"):
+        try:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(Config.BASE_DATA_DIR, directory, filename)
+            
+            # Read the uploaded CSV file directly from the request
+            file_stream = file.stream.read().decode("utf-8").splitlines()
+            reader = csv.DictReader(file_stream)
+            rows = list(reader)
+            
+            # Process the data to add taxa_url and attribution if needed
+            processed_rows = process_csv_data(rows)
+            
+            # Save the processed data to a CSV file
+            fieldnames = ["scientific_name", "common_name", "image_url", "taxa_url", "attribution"]
+            if save_csv_data(file_path, processed_rows, fieldnames):
+                return jsonify({
+                    "message": "File uploaded and modified successfully",
+                    "filename": filename
+                }), 200
+            else:
+                return jsonify({"error": "Failed to save CSV file"}), 500
+        
+        except Exception as e:
+            logger.error(f"Error in upload_csv: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"error": "Invalid file type"}), 400
+
+
+@flashcard_bp.route("/upload_csv_json", methods=["POST"])
+def upload_csv_json():
+    """
+    Upload a CSV file, process it to add taxa_url and attribution if needed,
+    and return the processed records as JSON without saving the file.
+    """
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    file = request.files["file"]
+    
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and file.filename.endswith(".csv"):
+        try:
+            # Read the uploaded CSV file
+            file_stream = file.stream.read().decode("utf-8").splitlines()
+            reader = csv.DictReader(file_stream)
+            rows = list(reader)
+            
+            # Process the data
+            processed_rows = process_csv_data(rows)
+            
+            # Return the processed records as JSON
+            return jsonify({
+                "message": "File processed successfully",
+                "records": processed_rows
+            }), 200
+        
+        except Exception as e:
+            logger.error(f"Error processing CSV file: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"error": "Invalid file type"}), 400
+
+
+@flashcard_bp.route("/select_csv", methods=["POST"])
+def select_csv():
+    """Select a CSV file for flashcards."""
+    payload = request.json
+    filename = payload.get("filename")
+    directory = payload.get("directory", "mmaforays")
+    
+    result, status_code = select_csv_file(filename, directory)
+    return jsonify(result), status_code
+
+
+@flashcard_bp.route("/delete_csv/<filename>", methods=["DELETE"])
+def delete_csv(filename: str):
+    """Delete a CSV file."""
+    if not filename.endswith(".csv"):
+        return jsonify({"error": "Invalid file type"}), 400
+    
+    directory = request.args.get("directory", "uploads")
+    file_path = os.path.join(Config.BASE_DATA_DIR, directory, filename)
+    
+    if not os.path.exists(file_path):
+        return jsonify({"error": "File not found"}), 404
+    
+    try:
+        os.remove(file_path)
+        return jsonify({"message": "File deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
