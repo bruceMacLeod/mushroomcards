@@ -14,6 +14,12 @@ The initial deck, "Spring2024Maine," was created by identifying the top 30 or so
 
 The Mushroom Flashcard application is an early-stage, open-source project. We welcome ideas and suggestions from anyone. If you're interested in other mushroom quizzes, you might also want to check out the quiz program at <a href="https://www.mycoquebec.org/" target="_blank" rel="noopener noreferrer">MycoQuebec</a>. They offer a different question presentation style and have some interesting options, such as selecting a single taxonomic group.
 
+## Development
+
+### Testing
+
+The backend includes a comprehensive test suite to ensure functionality. See the `/backend/tests/README.md` file for detailed instructions on running the tests.
+
 ## Installation Instructions for PythonAnywhere.com
 
 These step-by-step instructions are an outline of installation of the React/Flask application on PythonAnywhere.com:

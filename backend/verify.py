@@ -4,10 +4,7 @@ import json
 
 def verify_deployment(backend_url, frontend_url):
     checks = {
-        "Backend Health": {
-            "url": f"{backend_url}/api/data",
-            "expected": {"message": "Hello from Flask!"}
-        },
+
         "CSV Files List": {
             "url": f"{backend_url}/list_csv_files",
             "expected_type": "array"

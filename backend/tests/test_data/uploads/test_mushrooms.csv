@@ -1,0 +1,4 @@
+id,scientific_name,common_name,image_url,attribution,taxa_url
+67594,Flammulina velutipes,Velvet Foot,https://example.com/image1.jpg,https://example.com/attribution1,https://example.com/taxa1
+54134,Trametes versicolor,turkey-tail,https://example.com/image2.jpg,https://example.com/attribution2,https://example.com/taxa2
+48494,Pleurotus ostreatus,Oyster Mushroom,https://example.com/image3.jpg,https://example.com/attribution3,https://example.com/taxa3

@@ -12,12 +12,15 @@ logger = logging.getLogger(__name__)
 
 class PronunciationCache:
     """Cache for scientific name pronunciations."""
-    
-    def __init__(self):
-        """Initialize pronunciation cache."""
+
+    def __init__(self, cache_file_path="pronunciation_cache.csv"):
+        self.cache_file_path = cache_file_path
         self.cache = self._load_cache()
+#        self.cache = {}
         self._initialize_cache_file()
-    
+
+
+
     def _load_cache(self) -> Dict[str, str]:
         """Load pronunciation cache from a CSV file."""
         cache = {}
@@ -77,7 +80,7 @@ class PronunciationCache:
     def add(self, name: str, pronunciation: str) -> None:
         """Add pronunciation to cache."""
         self.cache[name] = pronunciation
-    
+
     def save_single_pronunciation(self, scientific_name: str, pronunciation: str) -> bool:
         """
         Append a single pronunciation record to the cache file with file locking.
@@ -86,11 +89,11 @@ class PronunciationCache:
         # Make sure the cache file exists
         if not os.path.exists(Config.PRONUNCIATION_CACHE_FILE):
             self._initialize_cache_file()
-            
+
         try:
             # Ensure the directory exists
             os.makedirs(os.path.dirname(Config.PRONUNCIATION_CACHE_FILE), exist_ok=True)
-            
+
             # Check if we can open the file
             with open(Config.PRONUNCIATION_CACHE_FILE, "r") as f:
                 # Make sure the file has a header
@@ -98,7 +101,7 @@ class PronunciationCache:
                 if header != "scientific_name,pronunciation":
                     logger.warning("Pronunciation cache file missing header, recreating")
                     self._initialize_cache_file()
-                    
+
             # Open file in append mode with file locking
             with open(Config.PRONUNCIATION_CACHE_FILE, "a", newline="") as f:
                 # Acquire an exclusive lock
@@ -114,22 +117,8 @@ class PronunciationCache:
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         except Exception as e:
             logger.error(f"Error saving pronunciation to cache: {str(e)}")
-            # Try one more time with a fresh file if there was an error
-            try:
-                self._initialize_cache_file()
-                with open(Config.PRONUNCIATION_CACHE_FILE, "a", newline="") as f:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                    try:
-                        writer = csv.writer(f)
-                        writer.writerow([scientific_name, pronunciation])
-                        logger.info(f"Successfully saved pronunciation on second attempt")
-                        return True
-                    finally:
-                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            except Exception as e2:
-                logger.error(f"Failed second attempt to save pronunciation: {str(e2)}")
-                return False
-    
+            return False
+
     def save_all(self) -> None:
         """Save all pronunciations to a CSV file."""
         try:
