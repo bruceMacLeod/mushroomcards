@@ -74,7 +74,12 @@ class PronunciationCache:
                 logger.error(f"Error initializing pronunciation cache file: {str(e)}")
     
     def get(self, name: str) -> Optional[str]:
-        """Get pronunciation from cache."""
+        """Get pronunciation from cache. If not in memory, try reloading from file."""
+        if name in self.cache:
+            return self.cache[name]
+        
+        # If not in memory, reload cache from file to see if another worker added it
+        self.cache = self._load_cache()
         return self.cache.get(name)
     
     def add(self, name: str, pronunciation: str) -> None:
