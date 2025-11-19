@@ -8,7 +8,7 @@ pip install -r backend/requirements.txt
 # Install Node.js dependencies and build frontend
 cd frontend
 npm install
-npm run build
+REACT_APP_API_URL="" npm run build
 cd ..
 
 # Copy frontend build to backend static/templates

@@ -28,4 +28,4 @@ def serve(path: str):
     
     if path and os.path.exists(os.path.join(current_app.static_folder, path)):
         return send_from_directory(current_app.static_folder, path)
-    return send_from_directory(current_app.static_folder, "index.html")
+    return render_template("index.html")

@@ -9,7 +9,7 @@ const FileManagementModal = ({ isOpen, onClose, onFileSelect, onDirectImport }) 
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedFileName, setSelectedFileName] = useState('');
     const [uploadFileName, setUploadFileName] = useState('');
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const apiUrl = process.env.REACT_APP_API_URL || '';
 
     // Handle Escape key press
     useEffect(() => {
