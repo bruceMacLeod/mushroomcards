@@ -128,7 +128,7 @@ const FileManagementModal = ({ isOpen, onClose, onFileSelect, onDirectImport }) 
                 setIsServerWakingUp(false);
             }
         }
-    }, [apiUrl, fetchserverfiles, onDirectImport, onClose]);
+    }, [apiUrl, onDirectImport, onClose]);
 
     const handleFileSelect = useCallback(async (filename) => {
         try {
