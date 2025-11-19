@@ -4,6 +4,7 @@ import logging
 import os
 import traceback
 from typing import Dict, List, Any, Tuple, Optional
+import pandas as pd
 
 from flask import Blueprint, jsonify, request, Response
 from werkzeug.utils import secure_filename
@@ -105,14 +106,18 @@ def upload_csv():
             processed_rows = process_csv_data(rows)
             
             # Save the processed data to a CSV file
-            fieldnames = ["scientific_name", "common_name", "image_url", "taxa_url", "attribution"]
-            if save_csv_data(file_path, processed_rows, fieldnames):
-                return jsonify({
-                    "message": "File uploaded and modified successfully",
-                    "filename": filename
-                }), 200
-            else:
-                return jsonify({"error": "Failed to save CSV file"}), 500
+            # Update state with the processed data directly without saving to disk
+            flashcard_state.update_current_file(
+                file_path,  # We still keep the path for reference, even if not on disk
+                directory,
+                pd.DataFrame(processed_rows)
+            )
+            
+            return jsonify({
+                "message": "File uploaded and processed successfully",
+                "filename": filename,
+                "records": processed_rows
+            }), 200
         
         except Exception as e:
             logger.error(f"Error in upload_csv: {str(e)}")

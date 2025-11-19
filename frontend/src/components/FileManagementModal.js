@@ -109,11 +109,16 @@ const FileManagementModal = ({ isOpen, onClose, onFileSelect, onDirectImport }) 
         formData.append('directory', 'uploads');
 
         try {
-            await axios.post(`${apiUrl}/upload_csv`, formData, {
+            const response = await axios.post(`${apiUrl}/upload_csv`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            await fetchserverfiles();
-            alert('File uploaded successfully');
+
+            if (response.data.records) {
+                onDirectImport(response.data.records, file.name);
+                onClose();
+            } else {
+                alert('File uploaded successfully but no records returned');
+            }
         } catch (error) {
             console.error('Upload error:', error);
             if (error.message.includes('CORS') || error.message.includes('Network Error')) {
@@ -123,7 +128,7 @@ const FileManagementModal = ({ isOpen, onClose, onFileSelect, onDirectImport }) 
                 setIsServerWakingUp(false);
             }
         }
-    }, [apiUrl, fetchserverfiles]);
+    }, [apiUrl, fetchserverfiles, onDirectImport, onClose]);
 
     const handleFileSelect = useCallback(async (filename) => {
         try {

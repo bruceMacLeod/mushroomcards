@@ -31,3 +31,4 @@ __pycache__/
 .idea/
 
 backend/data/pronounce.csv
+backend/myenv/
