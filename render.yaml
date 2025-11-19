@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mushroomcards
+    env: python
+    buildCommand: ./render-build.sh
+    startCommand: gunicorn -w 4 -b :5000 backend.app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: NODE_VERSION
+        value: 20.0.0
