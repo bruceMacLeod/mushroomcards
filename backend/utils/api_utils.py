@@ -68,7 +68,16 @@ def generate_pronunciation(scientific_name: str) -> Optional[str]:
         return None
     
     try:
-        prompt = f"Pronounce {scientific_name} using English Scientific Latin with explanation"
+        prompt = f"""Pronounce {scientific_name} using English Scientific Latin. on the line below the pronunciation,  provide any etymological (greek or latin) information about the genus and species"
+        The output should be formated like :
+        Pronunciation of Fomes fomentarius
+
+        FO-meez FO-men-TAIR-ee-əs
+
+        Etymology :
+        Genus : Fomes : from Latin fōmes meaning "tinder", referring to the use of the fungus as tinder.
+        Species : fomentarius : from Latin fomentārius meaning "suitable for poultices", referring to the historical use of the fungus in medicine as a styptic material.
+        """
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
