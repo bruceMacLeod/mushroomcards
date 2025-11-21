@@ -15,25 +15,29 @@ class PronunciationCache:
 
     def __init__(self, cache_file_path="pronunciation_cache.csv"):
         self.cache_file_path = cache_file_path
+        self.last_mtime = 0
         self.cache = self._load_cache()
-#        self.cache = {}
         self._initialize_cache_file()
-
-
 
     def _load_cache(self) -> Dict[str, str]:
         """Load pronunciation cache from a CSV file."""
         cache = {}
         if os.path.exists(Config.PRONUNCIATION_CACHE_FILE):
             try:
+                # Update mtime
+                self.last_mtime = os.path.getmtime(Config.PRONUNCIATION_CACHE_FILE)
+                
                 with open(Config.PRONUNCIATION_CACHE_FILE, "r") as f:
                     reader = csv.reader(f)
                     next(reader, None)  # Skip header
                     for row in reader:
                         if len(row) == 2:
                             cache[row[0]] = row[1]
+                logger.info(f"Loaded {len(cache)} pronunciations from {Config.PRONUNCIATION_CACHE_FILE}")
             except Exception as e:
                 logger.error(f"Error loading pronunciation cache: {str(e)}")
+        else:
+            logger.warning(f"Pronunciation cache file not found at {Config.PRONUNCIATION_CACHE_FILE}")
         return cache
     
     def _initialize_cache_file(self) -> None:
@@ -68,18 +72,29 @@ class PronunciationCache:
                         writer = csv.writer(f)
                         writer.writerow(["scientific_name", "pronunciation"])
                         logger.info(f"Created new pronunciation cache file at {Config.PRONUNCIATION_CACHE_FILE}")
+                        # Update mtime for the new file
+                        self.last_mtime = os.path.getmtime(Config.PRONUNCIATION_CACHE_FILE)
                     finally:
                         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             except Exception as e:
                 logger.error(f"Error initializing pronunciation cache file: {str(e)}")
     
     def get(self, name: str) -> Optional[str]:
-        """Get pronunciation from cache. If not in memory, try reloading from file."""
+        """Get pronunciation from cache. If not in memory, check if file changed and reload."""
+        # Check memory first
         if name in self.cache:
             return self.cache[name]
         
-        # If not in memory, reload cache from file to see if another worker added it
-        self.cache = self._load_cache()
+        # Check if file has changed
+        try:
+            if os.path.exists(Config.PRONUNCIATION_CACHE_FILE):
+                current_mtime = os.path.getmtime(Config.PRONUNCIATION_CACHE_FILE)
+                if current_mtime > self.last_mtime:
+                    logger.info(f"Cache file changed (mtime {current_mtime} > {self.last_mtime}), reloading...")
+                    self.cache = self._load_cache()
+        except Exception as e:
+            logger.error(f"Error checking cache file mtime: {str(e)}")
+            
         return self.cache.get(name)
     
     def add(self, name: str, pronunciation: str) -> None:
